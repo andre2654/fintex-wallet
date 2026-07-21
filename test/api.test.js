@@ -78,6 +78,20 @@ describe('computeSummary', () => {
     assert.equal(summary.count, 1);
     assert.equal(summary.income, 1000);
   });
+
+  test('filtra por mês (1 a 12, conforme README)', () => {
+    // month=7 deve retornar as transações de julho, não as de outro mês
+    const summary = computeSummary(transactions, { month: 7, year: 2026 });
+    assert.equal(summary.count, 3);
+    assert.equal(summary.income, 5000);
+    assert.equal(summary.expenses, 2500.5);
+  });
+
+  test('filtra por mês=12 (dezembro) sem zerar o resultado', () => {
+    const summary = computeSummary(transactions, { month: 12, year: 2025 });
+    assert.equal(summary.count, 1);
+    assert.equal(summary.income, 1000);
+  });
 });
 
 describe('API HTTP', () => {
