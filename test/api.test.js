@@ -50,6 +50,27 @@ describe('TransactionStore', () => {
     const store = new TransactionStore();
     assert.equal(store.remove(999), false);
   });
+
+  test('remove pelo id correto mesmo após exclusões anteriores (regressão)', () => {
+    const store = new TransactionStore();
+    for (let i = 1; i <= 12; i++) {
+      store.add({ description: `T${i}`, amount: 10, type: 'expense', category: 'X', date: '2026-07-01' });
+    }
+    // remove o id 2; ids restantes: 1,3,4,...,12
+    assert.equal(store.remove(2), true);
+    assert.ok(!store.all().some((t) => t.id === 2));
+
+    // id 12 ainda existe e deve ser removível
+    assert.equal(store.remove(12), true);
+    assert.ok(!store.all().some((t) => t.id === 12));
+
+    // id 11 ainda existe e deve ser removível, sem afetar outros ids
+    const remainingBefore = store.all().map((t) => t.id).sort((a, b) => a - b);
+    assert.equal(store.remove(11), true);
+    assert.ok(!store.all().some((t) => t.id === 11));
+    const remainingAfter = store.all().map((t) => t.id).sort((a, b) => a - b);
+    assert.deepEqual(remainingAfter, remainingBefore.filter((id) => id !== 11));
+  });
 });
 
 describe('computeSummary', () => {
