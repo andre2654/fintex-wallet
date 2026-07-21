@@ -21,7 +21,6 @@ src/summary.js       # cálculo do resumo financeiro (receitas, despesas, saldo)
 public/              # frontend (HTML/CSS/JS vanilla)
 data/                # dados persistidos (seed incluído)
 test/                # testes com node:test
-issues/              # issues abertas
 ```
 
 ## API
