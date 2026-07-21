@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fintex Wallet</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-mark">F</div>
+        <div>
+          <h1>Fintex Wallet</h1>
+          <p class="subtitle">Suas finanças, sob controle</p>
+        </div>
+      </div>
+      <div class="period-filter">
+        <select id="month-filter" aria-label="Filtrar por mês">
+          <option value="">Todos os meses</option>
+          <option value="1">Janeiro</option>
+          <option value="2">Fevereiro</option>
+          <option value="3">Março</option>
+          <option value="4">Abril</option>
+          <option value="5">Maio</option>
+          <option value="6">Junho</option>
+          <option value="7">Julho</option>
+          <option value="8">Agosto</option>
+          <option value="9">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+        <select id="year-filter" aria-label="Filtrar por ano">
+          <option value="2026" selected>2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+    </header>
+
+    <section class="cards">
+      <div class="card">
+        <span class="card-label">Saldo</span>
+        <strong class="card-value" id="balance">—</strong>
+      </div>
+      <div class="card card-income">
+        <span class="card-label">Receitas</span>
+        <strong class="card-value" id="income">—</strong>
+      </div>
+      <div class="card card-expense">
+        <span class="card-label">Despesas</span>
+        <strong class="card-value" id="expenses">—</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Nova transação</h2>
+      <form id="tx-form" class="tx-form">
+        <input type="text" id="f-description" placeholder="Descrição" required />
+        <input type="number" id="f-amount" placeholder="Valor (R$)" min="0.01" step="0.01" required />
+        <select id="f-type" required>
+          <option value="expense">Despesa</option>
+          <option value="income">Receita</option>
+        </select>
+        <input type="text" id="f-category" placeholder="Categoria" list="categories" required />
+        <datalist id="categories">
+          <option value="Alimentação"></option>
+          <option value="Moradia"></option>
+          <option value="Transporte"></option>
+          <option value="Lazer"></option>
+          <option value="Saúde"></option>
+          <option value="Salário"></option>
+          <option value="Freelance"></option>
+        </datalist>
+        <input type="date" id="f-date" required />
+        <button type="submit">Adicionar</button>
+      </form>
+      <p id="form-error" class="form-error" hidden></p>
+    </section>
+
+    <section class="panel">
+      <h2>Transações <span id="tx-count" class="count-badge"></span></h2>
+      <ul id="tx-list" class="tx-list"></ul>
+      <p id="empty-state" class="empty-state" hidden>Nenhuma transação encontrada.</p>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

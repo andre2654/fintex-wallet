@@ -1,0 +1,17 @@
+{
+  "nextId": 13,
+  "transactions": [
+    { "id": 1, "description": "Salário mensal", "amount": 8500, "type": "income", "category": "Salário", "date": "2026-06-05" },
+    { "id": 2, "description": "Aluguel", "amount": 2200, "type": "expense", "category": "Moradia", "date": "2026-06-07" },
+    { "id": 3, "description": "Supermercado Pão de Açúcar", "amount": 640.5, "type": "expense", "category": "Alimentação", "date": "2026-06-12" },
+    { "id": 4, "description": "Uber e metrô", "amount": 185.9, "type": "expense", "category": "Transporte", "date": "2026-06-18" },
+    { "id": 5, "description": "Cinema e jantar", "amount": 210, "type": "expense", "category": "Lazer", "date": "2026-06-21" },
+    { "id": 6, "description": "Freelance — landing page", "amount": 1500, "type": "income", "category": "Freelance", "date": "2026-06-25" },
+    { "id": 7, "description": "Salário mensal", "amount": 8500, "type": "income", "category": "Salário", "date": "2026-07-05" },
+    { "id": 8, "description": "Aluguel", "amount": 2200, "type": "expense", "category": "Moradia", "date": "2026-07-07" },
+    { "id": 9, "description": "Supermercado Carrefour", "amount": 712.35, "type": "expense", "category": "Alimentação", "date": "2026-07-10" },
+    { "id": 10, "description": "Gasolina", "amount": 250, "type": "expense", "category": "Transporte", "date": "2026-07-14" },
+    { "id": 11, "description": "Academia — mensalidade", "amount": 129.9, "type": "expense", "category": "Saúde", "date": "2026-07-15" },
+    { "id": 12, "description": "Show no Allianz Parque", "amount": 380, "type": "expense", "category": "Lazer", "date": "2026-07-18" }
+  ]
+}
