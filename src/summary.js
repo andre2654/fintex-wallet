@@ -15,7 +15,7 @@ export function computeSummary(transactions, filters = {}) {
 
   if (filters.month !== undefined) {
     const month = Number(filters.month);
-    filtered = filtered.filter((t) => new Date(t.date).getUTCMonth() === month);
+    filtered = filtered.filter((t) => new Date(t.date).getUTCMonth() === month - 1);
   }
 
   let income = 0;
