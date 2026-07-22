@@ -50,6 +50,53 @@ describe('TransactionStore', () => {
     const store = new TransactionStore();
     assert.equal(store.remove(999), false);
   });
+
+  test('remove a transação correta mesmo após outras remoções', () => {
+    const store = new TransactionStore();
+    // Adiciona 4 transações com IDs 1, 2, 3, 4
+    store.add({ description: 'A', amount: 10, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'B', amount: 20, type: 'expense', category: 'X', date: '2026-07-02' });
+    store.add({ description: 'C', amount: 30, type: 'expense', category: 'X', date: '2026-07-03' });
+    store.add({ description: 'D', amount: 40, type: 'expense', category: 'X', date: '2026-07-04' });
+    assert.equal(store.all().length, 4);
+
+    // Remove ID 2 (segundo elemento)
+    assert.equal(store.remove(2), true);
+    assert.equal(store.all().length, 3);
+    assert.equal(store.all().some((t) => t.id === 2), false); // ID 2 foi removido
+    assert.equal(store.all().some((t) => t.id === 1), true);  // ID 1 ainda existe
+    assert.equal(store.all().some((t) => t.id === 3), true);  // ID 3 ainda existe
+    assert.equal(store.all().some((t) => t.id === 4), true);  // ID 4 ainda existe
+
+    // Remove ID 4 (agora último elemento) — antes do bug, removeria ID 3
+    assert.equal(store.remove(4), true);
+    assert.equal(store.all().length, 2);
+    assert.equal(store.all().some((t) => t.id === 4), false); // ID 4 foi removido
+    assert.equal(store.all().some((t) => t.id === 3), true);  // ID 3 AINDA DEVE EXISTIR
+    assert.equal(store.all().some((t) => t.id === 1), true);  // ID 1 ainda existe
+  });
+
+  test('remove por id procura corretamente mesmo com buracos no array', () => {
+    const store = new TransactionStore();
+    store.add({ description: 'A', amount: 10, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'B', amount: 20, type: 'expense', category: 'X', date: '2026-07-02' });
+    store.add({ description: 'C', amount: 30, type: 'expense', category: 'X', date: '2026-07-03' });
+    store.add({ description: 'D', amount: 40, type: 'expense', category: 'X', date: '2026-07-04' });
+    store.add({ description: 'E', amount: 50, type: 'expense', category: 'X', date: '2026-07-05' });
+
+    // Remove 1º e 2º
+    assert.equal(store.remove(1), true);
+    assert.equal(store.remove(2), true);
+    assert.equal(store.all().length, 3);
+
+    // IDs restantes: 3, 4, 5 (nos índices 0, 1, 2)
+    // Tenta remover ID 5 — antes do bug, tentaria acessar índice 4 (não existe)
+    assert.equal(store.remove(5), true);
+    assert.equal(store.all().length, 2);
+    const remaining = store.all();
+    assert.equal(remaining[0].id, 3);
+    assert.equal(remaining[1].id, 4);
+  });
 });
 
 describe('computeSummary', () => {
