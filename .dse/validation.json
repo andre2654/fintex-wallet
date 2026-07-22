@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commands": {
+    "lint": [
+      "node",
+      "--check",
+      "server.js"
+    ],
+    "typecheck": [
+      "node",
+      "--check",
+      "server.js"
+    ],
+    "test": [
+      "npm",
+      "test",
+      "--silent"
+    ],
+    "build": [
+      "node",
+      "--check",
+      "server.js"
+    ]
+  },
+  "timeout_seconds": 300,
+  "sast_severity_gate": "MEDIUM"
+}
