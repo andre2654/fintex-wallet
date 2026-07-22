@@ -57,8 +57,12 @@ export class TransactionStore {
   }
 
   remove(id) {
-    const idx = Number(id) - 1;
-    if (!Number.isInteger(idx) || idx < 0 || idx >= this.transactions.length) {
+    const numId = Number(id);
+    if (!Number.isInteger(numId) || numId <= 0) {
+      return false;
+    }
+    const idx = this.transactions.findIndex((t) => t.id === numId);
+    if (idx === -1) {
       return false;
     }
     this.transactions.splice(idx, 1);

@@ -50,6 +50,42 @@ describe('TransactionStore', () => {
     const store = new TransactionStore();
     assert.equal(store.remove(999), false);
   });
+
+  test('remove a transação correta mesmo após outras exclusões', () => {
+    const store = new TransactionStore();
+    // Adiciona transações com IDs 1-5
+    store.add({ description: 'T1', amount: 10, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'T2', amount: 20, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'T3', amount: 30, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'T4', amount: 40, type: 'expense', category: 'X', date: '2026-07-01' });
+    store.add({ description: 'T5', amount: 50, type: 'expense', category: 'X', date: '2026-07-01' });
+
+    // Remove ID 2
+    assert.equal(store.remove(2), true);
+    assert.equal(store.all().length, 4);
+    assert.equal(store.all().find(t => t.id === 2), undefined);
+
+    // Remove ID 5 (deve remover T5, não T4)
+    assert.equal(store.remove(5), true);
+    assert.equal(store.all().length, 3);
+    assert.equal(store.all().find(t => t.id === 5), undefined);
+    assert.equal(store.all().find(t => t.id === 4).description, 'T4');
+
+    // Verifica que IDs 1, 3, 4 ainda existem
+    assert.equal(store.all().find(t => t.id === 1).description, 'T1');
+    assert.equal(store.all().find(t => t.id === 3).description, 'T3');
+    assert.equal(store.all().find(t => t.id === 4).description, 'T4');
+  });
+
+  test('retorna false para ID não-inteiro ou inválido', () => {
+    const store = new TransactionStore();
+    store.add({ description: 'T', amount: 10, type: 'expense', category: 'X', date: '2026-07-01' });
+    assert.equal(store.remove('abc'), false);
+    assert.equal(store.remove(0), false);
+    assert.equal(store.remove(-1), false);
+    assert.equal(store.remove(1.5), false);
+    assert.equal(store.all().length, 1);
+  });
 });
 
 describe('computeSummary', () => {
@@ -149,5 +185,55 @@ describe('API HTTP', () => {
   test('rota desconhecida retorna 404', async () => {
     const res = await fetch(`${baseUrl}/api/nope`);
     assert.equal(res.status, 404);
+  });
+
+  test('DELETE /api/transactions/:id remove transação correta após outras exclusões', async () => {
+    const store = new TransactionStore();
+    // Cria transações com IDs 1-5
+    store.add({ description: 'Aluguel', amount: 2000, type: 'expense', category: 'Moradia', date: '2026-07-06' });
+    store.add({ description: 'Salário', amount: 5000, type: 'income', category: 'Salário', date: '2026-07-05' });
+    store.add({ description: 'Mercado', amount: 300, type: 'expense', category: 'Alimentação', date: '2026-07-10' });
+    store.add({ description: 'Show', amount: 150, type: 'expense', category: 'Lazer', date: '2026-07-18' });
+    store.add({ description: 'Bônus', amount: 1000, type: 'income', category: 'Salário', date: '2026-07-20' });
+
+    const server2 = createApp(store);
+    await new Promise((resolve) => server2.listen(0, resolve));
+    const baseUrl2 = `http://localhost:${server2.address().port}`;
+
+    try {
+      // Deleta ID 1 (Aluguel)
+      let res = await fetch(`${baseUrl2}/api/transactions/1`, { method: 'DELETE' });
+      assert.equal(res.status, 200);
+
+      // Verifica que ID 1 foi removido
+      res = await fetch(`${baseUrl2}/api/transactions`);
+      let txns = (await res.json()).transactions;
+      assert.equal(txns.find(t => t.id === 1), undefined);
+      assert.equal(txns.length, 4);
+
+      // Deleta ID 5 (Bônus) — não deve remover nada além do ID 5
+      res = await fetch(`${baseUrl2}/api/transactions/5`, { method: 'DELETE' });
+      assert.equal(res.status, 200);
+
+      // Verifica que ID 5 foi removido e IDs 2,3,4 ainda existem
+      res = await fetch(`${baseUrl2}/api/transactions`);
+      txns = (await res.json()).transactions;
+      assert.equal(txns.find(t => t.id === 5), undefined);
+      assert.equal(txns.find(t => t.id === 2).description, 'Salário');
+      assert.equal(txns.find(t => t.id === 3).description, 'Mercado');
+      assert.equal(txns.find(t => t.id === 4).description, 'Show');
+      assert.equal(txns.length, 3);
+
+      // Tenta deletar ID 999 (inexistente) — deve retornar 404
+      res = await fetch(`${baseUrl2}/api/transactions/999`, { method: 'DELETE' });
+      assert.equal(res.status, 404);
+
+      // Verifica que nada mudou
+      res = await fetch(`${baseUrl2}/api/transactions`);
+      txns = (await res.json()).transactions;
+      assert.equal(txns.length, 3);
+    } finally {
+      server2.close();
+    }
   });
 });
