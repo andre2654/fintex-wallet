@@ -1,5 +1,9 @@
 # Fintex Wallet
 
+## POC smoke test
+
+DSE live turn confirmed working.
+
 Aplicação de controle de finanças pessoais — demo da Fintex. Node.js puro, **zero dependências**.
 
 ## Como rodar
