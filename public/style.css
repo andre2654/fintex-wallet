@@ -70,6 +70,7 @@ h1 {
 .period-filter {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 select,
@@ -87,6 +88,19 @@ button {
 select:focus,
 input:focus {
   border-color: var(--accent);
+}
+
+.btn-download {
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+
+.btn-download:hover {
+  filter: brightness(1.15);
 }
 
 .cards {
