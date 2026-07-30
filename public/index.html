@@ -80,7 +80,12 @@
     </section>
 
     <section class="panel">
-      <h2>Transações <span id="tx-count" class="count-badge"></span></h2>
+      <div class="section-header">
+        <h2>Transações <span id="tx-count" class="count-badge"></span></h2>
+        <button id="export-csv-btn" class="btn-secondary" title="Baixar transações como CSV">
+          📥 Baixar CSV
+        </button>
+      </div>
       <ul id="tx-list" class="tx-list"></ul>
       <p id="empty-state" class="empty-state" hidden>Nenhuma transação encontrada.</p>
     </section>
