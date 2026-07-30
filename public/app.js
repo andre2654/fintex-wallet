@@ -11,6 +11,7 @@ const els = {
   formError: document.getElementById('form-error'),
   monthFilter: document.getElementById('month-filter'),
   yearFilter: document.getElementById('year-filter'),
+  downloadBtn: document.getElementById('download-btn'),
 };
 
 async function fetchJson(url, options) {
@@ -79,6 +80,57 @@ function formatDate(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function escapeCSVField(field) {
+  const str = String(field ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function generateCSV(transactions) {
+  const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor (R$)'];
+  const rows = transactions.map((t) => {
+    const date = formatDate(t.date);
+    const description = escapeCSVField(t.description);
+    const category = escapeCSVField(t.category);
+    const type = t.type === 'income' ? 'Receita' : 'Despesa';
+    const amount = t.amount.toFixed(2).replace('.', ',');
+    return [date, description, category, type, amount].join(',');
+  });
+  return [headers.join(','), ...rows].join('\n');
+}
+
+async function downloadHistory() {
+  try {
+    const { transactions } = await fetchJson('/api/transactions');
+    const month = els.monthFilter.value ? Number(els.monthFilter.value) : null;
+    const year = els.yearFilter.value ? Number(els.yearFilter.value) : null;
+
+    const visible = transactions.filter((t) => {
+      const [y, m] = t.date.split('-').map(Number);
+      if (year && y !== year) return false;
+      if (month && m !== month) return false;
+      return true;
+    });
+
+    const csv = generateCSV(visible);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const today = new Date().toISOString().slice(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fintex-transacoes-${today}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert(`Não foi possível baixar o histórico: ${err.message}`);
+  }
+}
+
 async function removeTransaction(id) {
   try {
     await fetchJson(`/api/transactions/${id}`, { method: 'DELETE' });
@@ -121,6 +173,7 @@ els.form.addEventListener('submit', async (event) => {
 
 els.monthFilter.addEventListener('change', refresh);
 els.yearFilter.addEventListener('change', refresh);
+els.downloadBtn.addEventListener('click', downloadHistory);
 
 function setDefaultDate() {
   document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
