@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TransactionStore } from './src/store.js';
 import { computeSummary } from './src/summary.js';
+import { transactionsToCSV, generateExportFileName } from './src/csv-export.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -14,6 +15,7 @@ const MIME = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json',
   '.svg': 'image/svg+xml',
+  '.csv': 'text/csv; charset=utf-8',
 };
 
 export function createApp(store) {
@@ -69,6 +71,37 @@ async function handleApi(req, res, url, store) {
     if (url.searchParams.has('month')) filters.month = url.searchParams.get('month');
     if (url.searchParams.has('year')) filters.year = url.searchParams.get('year');
     return sendJson(res, 200, computeSummary(store.all(), filters));
+  }
+
+  // GET /api/export/csv?month=1-12&year=YYYY
+  if (req.method === 'GET' && pathname === '/api/export/csv') {
+    let transactions = store.all();
+    const month = url.searchParams.get('month');
+    const year = url.searchParams.get('year');
+
+    // Apply same filtering logic as transaction list
+    if (month || year) {
+      transactions = transactions.filter((t) => {
+        const [y, m] = t.date.split('-').map(Number);
+        if (year && y !== Number(year)) return false;
+        if (month && m !== Number(month)) return false;
+        return true;
+      });
+    }
+
+    // Sort by date descending (most recent first)
+    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const csv = transactionsToCSV(transactions);
+    const filename = generateExportFileName();
+
+    res.writeHead(200, {
+      'Content-Type': MIME['.csv'],
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': Buffer.byteLength(csv, 'utf8'),
+    });
+    res.end(csv);
+    return;
   }
 
   sendJson(res, 404, { error: 'Rota não encontrada' });
