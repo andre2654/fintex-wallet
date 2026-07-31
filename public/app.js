@@ -11,6 +11,7 @@ const els = {
   formError: document.getElementById('form-error'),
   monthFilter: document.getElementById('month-filter'),
   yearFilter: document.getElementById('year-filter'),
+  downloadCsvBtn: document.getElementById('download-csv-btn'),
 };
 
 async function fetchJson(url, options) {
@@ -88,6 +89,36 @@ async function removeTransaction(id) {
   }
 }
 
+async function downloadCsv() {
+  try {
+    const params = currentFilters();
+    const url = `/api/transactions/export?${params}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Erro ao baixar CSV: ${response.status}`);
+    }
+
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers.get('content-disposition') || '';
+    const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+    const filename = filenameMatch ? filenameMatch[1] : 'transactions.csv';
+
+    // Convert response to blob and trigger download
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(objectUrl);
+  } catch (err) {
+    alert(`Não foi possível baixar CSV: ${err.message}`);
+  }
+}
+
 async function refresh() {
   await Promise.all([loadSummary(), loadTransactions()]);
 }
@@ -121,6 +152,7 @@ els.form.addEventListener('submit', async (event) => {
 
 els.monthFilter.addEventListener('change', refresh);
 els.yearFilter.addEventListener('change', refresh);
+els.downloadCsvBtn.addEventListener('click', downloadCsv);
 
 function setDefaultDate() {
   document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
